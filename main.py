@@ -6,8 +6,8 @@ class Snake():
     
     stdscr = None
     
-    width = 70
-    height = 50
+    width = 50
+    height = 30
     
     snake = [(width / 2, height / 2)]
     apple = ()
@@ -96,10 +96,14 @@ class Snake():
         self.snake.append(part)
     
     def _spawnApple(self):
-        # todo apple might spawn at a snake part (head, tails etc.), create check
-        x = random.choice(range(1, self.width - 1))
-        y = random.choice(range(1, self.height - 1))
-        
+        x, y = 0, 0
+        while True:
+            x = random.choice(range(1, self.width - 1))
+            y = random.choice(range(1, self.height - 1))
+            
+            if (x, y) not in self.snake:
+                break
+            
         self.apple = (x, y)
         
     def _getDirection(self):
