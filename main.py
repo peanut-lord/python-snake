@@ -124,7 +124,9 @@ class Snake():
     def _collides(self):
         # @todo check if snake hits itself
         head = self.snake[0]
-        return head[0] == 0 or head[0] == self.width - 1 or head[1] == 0 or head[1] == self.height - 1
+        return head[0] == 0 or head[0] == self.width - 1 \
+               or head[1] == 0 or head[1] == self.height - 1 \
+               or head in self.snake[1:]
     
     def _moveSnake(self):
         """Moves the snake in the set direction
