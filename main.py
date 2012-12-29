@@ -35,7 +35,7 @@ class Snake():
         self._configureCurses()
         self._configureColors()
         
-        # We need to ticks
+        # We need the ticks
         time.Clock()
         
         # Spawn the first apple
