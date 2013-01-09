@@ -32,6 +32,7 @@ class Snake():
     
     # Cheat Options
     _noClip = False
+    delay = 500
     
     def __init__(self, stdscr, *args, **kwargs):
         """Initializes the game with some options
@@ -65,6 +66,7 @@ class Snake():
     
     def _configureGame(self, options):
         self._noClip = int(options['noClip']) == 1
+        self.delay = int(options['delay']) if int(options['delay']) is not -1 else 500
     
     def _draw(self):
         """Draws the game
@@ -147,6 +149,7 @@ class Snake():
     def _moveSnake(self):
         """Moves the snake in the set direction
         """
+        # @todo snake cant move into the opposite direction if the snake is longer than 1
         head = self.snake[0]
         if self.CURRENT_DIRECTION == self.DIRECTION_UP:
             newPos = (head[0], head[1]-1)
@@ -201,7 +204,7 @@ class Snake():
             self._draw()
             
             # Slow things down a bit...
-            lastScreenUpdate = time.get_ticks() + 500
+            lastScreenUpdate = time.get_ticks() + self.delay
         
         # @todo write gameover message
     
@@ -214,6 +217,7 @@ def main(stdscr):
 def parse_cmd_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--noClip', nargs='?', default=0)
+    parser.add_argument('--delay', nargs='?', default=-1)
     
     return parser.parse_args(sys.argv[1:])
     
