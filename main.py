@@ -1,6 +1,8 @@
 import curses
 import random
 from pygame import time
+import argparse
+import sys
 
 class Snake():
     
@@ -28,12 +30,16 @@ class Snake():
     COLOR_SNAKE = 2
     COLOR_APPLE = 3
     
-    def __init__(self, stdscr):
+    # Cheat Options
+    _noClip = False
+    
+    def __init__(self, stdscr, *args, **kwargs):
         """Initializes the game with some options
         """
         self.stdscr = stdscr
         self._configureCurses()
         self._configureColors()
+        self._configureGame(kwargs)
         
         # We need the ticks
         time.Clock()
@@ -47,6 +53,8 @@ class Snake():
         
         # No mouse cursor
         curses.curs_set(0)
+        
+        # Allow print
         curses.echo()
         
     def _configureColors(self):
@@ -54,6 +62,9 @@ class Snake():
         # curses.init_pair(self.COLOR_SNAKE, curses.COLOR_YELLOW, curses.COLOR_BLACK)
         # curses.init_pair(self.COLOR_APPLE, curses.COLOR_RED, curses.COLOR_BLACK)
         pass
+    
+    def _configureGame(self, options):
+        self._noClip = int(options['noClip']) == 1
     
     def _draw(self):
         """Draws the game
@@ -122,11 +133,16 @@ class Snake():
             pass
     
     def _collides(self):
-        # @todo check if snake hits itself
         head = self.snake[0]
-        return head[0] == 0 or head[0] == self.width - 1 \
-               or head[1] == 0 or head[1] == self.height - 1 \
-               or head in self.snake[1:]
+        
+        # Stop hit yourself
+        if head in self.snake[1:]:
+            return True
+        
+        if self._noClip is False:
+            return head[0] == 0 or head[0] == self.width - 1 or head[1] == 0 or head[1] == self.height - 1
+        
+        return False
     
     def _moveSnake(self):
         """Moves the snake in the set direction
@@ -141,7 +157,18 @@ class Snake():
         elif self.CURRENT_DIRECTION == self.DIRECTION_RIGHT:
             newPos = (head[0]+1, head[1])
         else:
-            newPos = (head[0], head[1])
+            newPos = (head[0], head[1]) 
+            
+        # The game might run in noClip mode, bounds do not matter anymore
+        if self._noClip is True:
+            if newPos[1] == 0: # Up
+                newPos = newPos[0], self.height - 2
+            elif newPos[1] == self.height: # Down
+                newPos = newPos[0], 1
+            elif newPos[0] == 0: # Left
+                newPos = self.width - 2, newPos[1]
+            elif newPos[0] == self.width -1 : # Right
+                newPos = 1, newPos[1]
         
         # The coords in a array list element are the future positions for the 
         # next element
@@ -156,7 +183,8 @@ class Snake():
         FPS = 1.0 / 8.0
         lastScreenUpdate = time.get_ticks()
         
-        while True:
+        run = True
+        while run:
             if time.get_ticks() -lastScreenUpdate < FPS:
                 continue
             
@@ -164,7 +192,7 @@ class Snake():
             self._moveSnake()
             
             if self._collides():
-                raise Exception("Game Over!")
+                run = False
             
             if self._eatsApple():
                 self._spawnApple()
@@ -174,10 +202,20 @@ class Snake():
             
             # Slow things down a bit...
             lastScreenUpdate = time.get_ticks() + 500
+        
+        # @todo write gameover message
     
 def main(stdscr):
-    s = Snake(stdscr)
+    args = vars(parse_cmd_args())
+
+    s = Snake(stdscr, **args)
     s.run()
+
+def parse_cmd_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--noClip', nargs='?', default=0)
+    
+    return parser.parse_args(sys.argv[1:])
     
 if __name__ == '__main__':
     curses.wrapper(main)
