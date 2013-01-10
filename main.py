@@ -23,7 +23,6 @@ class Snake():
     
     TOKEN_WALL  = '#'
     TOKEN_SNAKE = 'S'
-    TOKEN_SPACE = ' '
     TOKEN_APPLE = 'A'
     
     COLOR_WALL  = 1
@@ -71,14 +70,14 @@ class Snake():
     def _draw(self):
         """Draws the game
         """
-        # Draw the wall
-        for y in xrange(0, self.height):
-            for x in xrange(0, self.width):
-                if y == 0 or y == self.height - 1 or x == 0 or x == self.width -1:
-                    self.stdscr.addstr(y, x, self.TOKEN_WALL)
-                else:
-                    # Clears the board
-                    self.stdscr.addstr(y, x, self.TOKEN_SPACE)
+        # Clear the board
+        self.stdscr.erase()
+        
+        self.stdscr.hline(0, 0, self.TOKEN_WALL, self.width)
+        self.stdscr.hline(self.height-1, 0, self.TOKEN_WALL, self.width)
+        
+        self.stdscr.vline(0, 0, self.TOKEN_WALL, self.height)
+        self.stdscr.vline(0, self.width-1, self.TOKEN_WALL, self.height)
 
         # Draw the snake
         for s in self.snake:
@@ -121,7 +120,8 @@ class Snake():
         
     def _getDirection(self):
         c = self.stdscr.getch()
-        
+
+        # @todo push to a queue and check that we don't add opposite directions
         if c == curses.KEY_UP:
             self.CURRENT_DIRECTION = curses.KEY_UP
         elif c == curses.KEY_DOWN:
@@ -149,7 +149,6 @@ class Snake():
     def _moveSnake(self):
         """Moves the snake in the set direction
         """
-        # @todo snake cant move into the opposite direction if the snake is longer than 1
         head = self.snake[0]
         if self.CURRENT_DIRECTION == self.DIRECTION_UP:
             newPos = (head[0], head[1]-1)
