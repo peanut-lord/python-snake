@@ -144,7 +144,7 @@ class Snake():
         # Current Position of the snake head
         x, y = self.snake[0]
         if self.CURRENT_DIRECTION == self.DIRECTION_UP:
-            # Our coordinate system is in the fourth sqaure, so we need to
+            # Our coordinate system is in the fourth square, so we need to
             # decrease y in order to get up (to increase to get down)
             y = y - 1
         elif self.CURRENT_DIRECTION == self.DIRECTION_DOWN:
