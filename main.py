@@ -58,17 +58,22 @@ class Snake():
         curses.echo()
         
     def _configureColors(self):
-        # curses.init_pair(self.COLOR_WALL, curses.COLOR_CYAN, curses.COLOR_BLACK)
-        # curses.init_pair(self.COLOR_SNAKE, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-        # curses.init_pair(self.COLOR_APPLE, curses.COLOR_RED, curses.COLOR_BLACK)
-        pass
+        """Configures the colors; atm not supported I guess?
+
+        """
+        curses.init_pair(self.COLOR_WALL, curses.COLOR_CYAN, curses.COLOR_BLACK)
+        curses.init_pair(self.COLOR_SNAKE, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+        curses.init_pair(self.COLOR_APPLE, curses.COLOR_RED, curses.COLOR_BLACK)
     
     def _configureGame(self, options):
+        """Reads the options from the cmd and sets them for the game
+
+        """
         self._noClip = int(options['noClip']) == 1
         self.delay = int(options['delay']) if int(options['delay']) is not -1 else 500
     
     def _draw(self):
-        """Draws the game
+        """Draws the game board
         """
         # Clear the board
         self.stdscr.erase()
@@ -89,25 +94,16 @@ class Snake():
         self.stdscr.refresh()
         
     def _eatsApple(self):
+        """Returns if the snake head is eating the apple
+
+        """
         head = self.snake[0]
         return head[0] == self.apple[0] and head[1] == self.apple[1]
     
-    def _lengthenSnake(self):
-        # Use the last part of the snake as draft
-        tail = self.snake[len(self.snake)-1]
-        
-        if self.CURRENT_DIRECTION == self.DIRECTION_UP:
-            part = (tail[0], tail[1]+1)
-        elif self.CURRENT_DIRECTION == self.DIRECTION_DOWN:
-            part = (tail[0], tail[1]-1)
-        elif self.CURRENT_DIRECTION == self.DIRECTION_LEFT:
-            part = (tail[0]+1, tail[1])
-        else:
-            part = (tail[0]-1, tail[1])
-            
-        self.snake.append(part)
-    
     def _spawnApple(self):
+        """Spawns a new apple
+
+        """
         x, y = 0, 0
         while True:
             x = random.choice(range(1, self.width - 1))
@@ -119,22 +115,18 @@ class Snake():
         self.apple = (x, y)
         
     def _getDirection(self):
+        """Reads the current direction from ncurses
+
+        """
         c = self.stdscr.getch()
 
-        # @todo push to a queue and check that we don't add opposite directions
-        if c == curses.KEY_UP:
-            self.CURRENT_DIRECTION = curses.KEY_UP
-        elif c == curses.KEY_DOWN:
-            self.CURRENT_DIRECTION = curses.KEY_DOWN
-        elif c == curses.KEY_LEFT:
-            self.CURRENT_DIRECTION = curses.KEY_LEFT
-        elif c == curses.KEY_RIGHT:
-            self.CURRENT_DIRECTION = curses.KEY_RIGHT
-        else:
-            # Do nothing
-            pass
+        if c in [curses.KEY_UP, curses.KEY_DOWN, curses.KEY_LEFT, curses.KEY_RIGHT]:
+            self.CURRENT_DIRECTION = c
     
     def _collides(self):
+        """Returns if the snake hits something
+
+        """
         head = self.snake[0]
         
         # Stop hit yourself
@@ -149,38 +141,31 @@ class Snake():
     def _moveSnake(self):
         """Moves the snake in the set direction
         """
-        head = self.snake[0]
+        # Current Position of the snake head
+        x, y = self.snake[0]
         if self.CURRENT_DIRECTION == self.DIRECTION_UP:
-            newPos = (head[0], head[1]-1)
+            # Our coordinate system is in the fourth sqaure, so we need to
+            # decrease y in order to get up (to increase to get down)
+            y = y - 1
         elif self.CURRENT_DIRECTION == self.DIRECTION_DOWN:
-            newPos = (head[0], head[1]+1)
+            y = y + 1
         elif self.CURRENT_DIRECTION == self.DIRECTION_LEFT:
-            newPos = (head[0]-1, head[1])
+            x = x - 1
         elif self.CURRENT_DIRECTION == self.DIRECTION_RIGHT:
-            newPos = (head[0]+1, head[1])
-        else:
-            newPos = (head[0], head[1]) 
-            
-        # The game might run in noClip mode, bounds do not matter anymore
-        if self._noClip is True:
-            if newPos[1] == 0: # Up
-                newPos = newPos[0], self.height - 2
-            elif newPos[1] == self.height: # Down
-                newPos = newPos[0], 1
-            elif newPos[0] == 0: # Left
-                newPos = self.width - 2, newPos[1]
-            elif newPos[0] == self.width -1 : # Right
-                newPos = 1, newPos[1]
-        
-        # The coords in a array list element are the future positions for the 
-        # next element
-        for key, val in enumerate(self.snake):
-            self.snake[key], newPos = newPos, val
+            x = x + 1
+
+        self.snake = [(x, y)] + self.snake
+
+        # If the snake eats the apple we don't need to throw away the tail
+        if not self._eatsApple():
+            self.snake.pop()
+
+        # @todo we removed the noClip on purpose
     
     def run(self):
-        """Runs the game
-        
-        
+        """Runs the main game loop
+
+
         """
         FPS = 1.0 / 8.0
         lastScreenUpdate = time.get_ticks()
@@ -198,7 +183,6 @@ class Snake():
             
             if self._eatsApple():
                 self._spawnApple()
-                self._lengthenSnake()
             
             self._draw()
             
