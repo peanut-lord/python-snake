@@ -3,13 +3,19 @@ import random
 from pygame import time
 import argparse
 import sys
+import thread
 
 class Snake():
     
     stdscr = None
-    
+
+    # Dimensions of the board
     width = 50
     height = 30
+
+    # Game modes
+    pauseGame = False
+    runGame = True
     
     snake = [(width / 2, height / 2)]
     apple = ()
@@ -20,11 +26,13 @@ class Snake():
     DIRECTION_DOWN  = curses.KEY_DOWN
     
     CURRENT_DIRECTION = DIRECTION_RIGHT
-    
+
+    # Tokens for the drawing
     TOKEN_WALL  = '#'
     TOKEN_SNAKE = 'S'
     TOKEN_APPLE = 'A'
-    
+
+    # Colors
     COLOR_WALL  = 1
     COLOR_SNAKE = 2
     COLOR_APPLE = 3
@@ -113,15 +121,39 @@ class Snake():
                 break
             
         self.apple = (x, y)
-        
-    def _getDirection(self):
-        """Reads the current direction from ncurses
+
+    def _processInput(self):
+        """Reads the input from ncurses and process it
+
 
         """
+
+        # Get char from curses
         c = self.stdscr.getch()
 
-        if c in [curses.KEY_UP, curses.KEY_DOWN, curses.KEY_LEFT, curses.KEY_RIGHT]:
-            self.CURRENT_DIRECTION = c
+        # If the user has pressed any char multiple times it would block the commands until
+        # the ncurses queue is clear again
+        while c is not -1:
+            # Ignore no or invalid input
+            if c not in [curses.KEY_UP, curses.KEY_DOWN, curses.KEY_LEFT, curses.KEY_RIGHT, 'p', ' ', 'q']:
+                continue
+
+            if c is 'q':
+                self.runGame = False
+                break
+
+            if c is 'p' or c is ' ':
+                self.pauseGame = True
+                break
+
+            # If the input direction is the same, move on to the next
+            if c is not self.CURRENT_DIRECTION:
+                self.CURRENT_DIRECTION = c
+
+                # TODO okay, problem: if we use break, our idea of erasing all inputs of the same kind won't work,
+                # but avoiding break results in only the last direction to be applied... find a solution, I guess?
+
+            c = self.stdscr.getch()
     
     def _collides(self):
         """Returns if the snake hits something
@@ -169,20 +201,21 @@ class Snake():
         """
         FPS = 1.0 / 8.0
         lastScreenUpdate = time.get_ticks()
-        
-        run = True
-        while run:
-            if time.get_ticks() -lastScreenUpdate < FPS:
+
+        while self.runGame:
+            if time.get_ticks() - lastScreenUpdate < FPS:
                 continue
-            
-            self._getDirection()
-            self._moveSnake()
-            
-            if self._collides():
-                run = False
-            
-            if self._eatsApple():
-                self._spawnApple()
+
+            self._processInput()
+
+            if self.pauseGame is False:
+                self._moveSnake()
+
+                if self._collides():
+                    self.runGame = False
+
+                if self._eatsApple():
+                    self._spawnApple()
             
             self._draw()
             
