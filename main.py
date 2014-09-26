@@ -10,8 +10,8 @@ class Snake():
     stdscr = None
 
     # Dimensions of the board
-    width = 50
-    height = 30
+    width = 20
+    height = 20
 
     # Game modes
     pauseGame = False
@@ -63,7 +63,7 @@ class Snake():
         curses.curs_set(0)
         
         # Allow print
-        curses.echo()
+        # curses.echo()
         
     def _configureColors(self):
         """Configures the colors; atm not supported I guess?
@@ -134,27 +134,17 @@ class Snake():
         # If the user has pressed any char multiple times it would block the commands until
         # the ncurses queue is clear again
         while c is not -1:
-            # Ignore no or invalid input
-            if c not in [curses.KEY_UP, curses.KEY_DOWN, curses.KEY_LEFT, curses.KEY_RIGHT, 'p', ' ', 'q']:
-                continue
+            if c in [curses.KEY_UP, curses.KEY_DOWN, curses.KEY_LEFT, curses.KEY_RIGHT]:
+                if c != self.CURRENT_DIRECTION:
+                    self.CURRENT_DIRECTION = c
+                    break
 
-            if c is 'q':
-                self.runGame = False
-                break
+                if c == self.CURRENT_DIRECTION:
+                    c = self.stdscr.getch()
+                    continue
+            
+        
 
-            if c is 'p' or c is ' ':
-                self.pauseGame = True
-                break
-
-            # If the input direction is the same, move on to the next
-            if c is not self.CURRENT_DIRECTION:
-                self.CURRENT_DIRECTION = c
-
-                # TODO okay, problem: if we use break, our idea of erasing all inputs of the same kind won't work,
-                # but avoiding break results in only the last direction to be applied... find a solution, I guess?
-
-            c = self.stdscr.getch()
-    
     def _collides(self):
         """Returns if the snake hits something
 
