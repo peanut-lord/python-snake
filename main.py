@@ -13,6 +13,9 @@ class Snake():
     width = 20
     height = 20
 
+    # Frame counter
+    _frames = 0
+
     # Game modes
     pauseGame = False
     runGame = True
@@ -76,7 +79,10 @@ class Snake():
         """
         self._noClip = int(options['noClip']) == 1
         self.delay = int(options['delay']) if int(options['delay']) is not -1 else 500
-    
+
+    def _getTextPositon(self, text):
+        return self.width / 2 - (len(text) / 2), self.height / 2
+
     def _draw(self):
         """Draws the game board
         """
@@ -95,6 +101,10 @@ class Snake():
             
         # Draw apple
         self.stdscr.addstr(self.apple[1], self.apple[0], self.TOKEN_APPLE)
+
+        if self.pauseGame and self._frames % 2 == 0:
+            x, y = self._getTextPositon("Pause")
+            self.stdscr.addstr(int(y), int(x), "Pause")
 
         self.stdscr.refresh()
         
@@ -174,7 +184,7 @@ class Snake():
         x, y = self.snake[0]
         if self.CURRENT_DIRECTION == self.DIRECTION_UP:
             # Our coordinate system is in the fourth square, so we need to
-            # decrease y in order to get up (to increase to get down)
+            # decrease y in order to get up (or increase to get down)
             y = y - 1
         elif self.CURRENT_DIRECTION == self.DIRECTION_DOWN:
             y = y + 1
@@ -215,6 +225,8 @@ class Snake():
                     self._spawnApple()
             
             self._draw()
+
+            self._frames = self._frames + 1
             
             # Slow things down a bit...
             lastScreenUpdate = time.get_ticks() + self.delay
