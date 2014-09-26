@@ -134,7 +134,8 @@ class Snake():
         # If the user has pressed any char multiple times it would block the commands until
         # the ncurses queue is clear again
         while c != -1:
-            if c in [curses.KEY_UP, curses.KEY_DOWN, curses.KEY_LEFT, curses.KEY_RIGHT]:
+            if c in [curses.KEY_UP, curses.KEY_DOWN, curses.KEY_LEFT, curses.KEY_RIGHT] \
+                    and self.pauseGame is False:
                 # TODO snake cant go opposite directions instantly
                 if c != self.CURRENT_DIRECTION:
                     self.CURRENT_DIRECTION = c
