@@ -138,10 +138,6 @@ class Snake():
                     self.CURRENT_DIRECTION = c
                     break
 
-                if c == self.CURRENT_DIRECTION:
-                    c = self.stdscr.getch()
-                    continue
-
             try:
                 c = chr(c)
 
