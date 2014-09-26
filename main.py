@@ -105,8 +105,8 @@ class Snake():
         """Returns if the snake head is eating the apple
 
         """
-        head = self.snake[0]
-        return head[0] == self.apple[0] and head[1] == self.apple[1]
+        x, y = self.snake[0]
+        return x == self.apple[0] and y == self.apple[1]
     
     def _spawnApple(self):
         """Spawns a new apple
@@ -125,16 +125,17 @@ class Snake():
     def _processInput(self):
         """Reads the input from ncurses and process it
 
-
+        Reads a char from the ncurses input queue and processes it. If a direction key is
+        hit multiple times, only the first one is taken into account, the others will be ignored.
+        Still it only works with one direction change per frame (on purpose of course).
         """
-
-        # Get char from curses
         c = self.stdscr.getch()
 
         # If the user has pressed any char multiple times it would block the commands until
         # the ncurses queue is clear again
-        while c is not -1:
+        while c != -1:
             if c in [curses.KEY_UP, curses.KEY_DOWN, curses.KEY_LEFT, curses.KEY_RIGHT]:
+                # TODO snake cant go opposite directions instantly
                 if c != self.CURRENT_DIRECTION:
                     self.CURRENT_DIRECTION = c
                     break
@@ -142,21 +143,33 @@ class Snake():
                 if c == self.CURRENT_DIRECTION:
                     c = self.stdscr.getch()
                     continue
-            
-        
+
+            try:
+                c = chr(c)
+
+                if c is 'q':
+                    self.runGame = False
+
+                if c is 'p' or c is ' ':
+                    self.pauseGame = not self.pauseGame
+            except:
+                pass
+
+            # We run into a infinite loop if we forget to fetch the next char...
+            c = self.stdscr.getch()
 
     def _collides(self):
         """Returns if the snake hits something
 
         """
-        head = self.snake[0]
+        x, y = self.snake[0]
         
         # Stop hit yourself
-        if head in self.snake[1:]:
+        if (x, y) in self.snake[1:]:
             return True
         
         if self._noClip is False:
-            return head[0] == 0 or head[0] == self.width - 1 or head[1] == 0 or head[1] == self.height - 1
+            return x == 0 or x == self.width - 1 or y == 0 or y == self.height - 1
         
         return False
     
