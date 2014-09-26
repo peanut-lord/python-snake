@@ -62,9 +62,6 @@ class Snake():
         # No mouse cursor
         curses.curs_set(0)
         
-        # Allow print
-        # curses.echo()
-        
     def _configureColors(self):
         """Configures the colors; atm not supported I guess?
 
@@ -225,8 +222,6 @@ class Snake():
             
             # Slow things down a bit...
             lastScreenUpdate = time.get_ticks() + self.delay
-        
-        # @todo write gameover message
     
 def main(stdscr):
     args = vars(parse_cmd_args())
@@ -243,3 +238,4 @@ def parse_cmd_args():
     
 if __name__ == '__main__':
     curses.wrapper(main)
+    print "Game Over"
