@@ -44,13 +44,13 @@ class Snake():
     _noClip = False
     delay = 500
     
-    def __init__(self, stdscr, *args, **kwargs):
+    def __init__(self, stdscr, cmd_args):
         """Initializes the game with some options
         """
         self.stdscr = stdscr
         self._configureCurses()
         self._configureColors()
-        self._configureGame(kwargs)
+        self._configureGame(cmd_args)
         
         # We need the ticks
         time.Clock()
@@ -73,12 +73,11 @@ class Snake():
         curses.init_pair(self.COLOR_SNAKE, curses.COLOR_YELLOW, curses.COLOR_BLACK)
         curses.init_pair(self.COLOR_APPLE, curses.COLOR_RED, curses.COLOR_BLACK)
     
-    def _configureGame(self, options):
+    def _configureGame(self, cmd_args):
         """Reads the options from the cmd and sets them for the game
 
         """
-        self._noClip = int(options['noClip']) == 1
-        self.delay = int(options['delay']) if int(options['delay']) is not -1 else 500
+        self.delay = cmd_args.delay if cmd_args.delay is not -1 else 500
 
     def _getTextPositon(self, text):
         return self.width / 2 - (len(text) / 2), self.height / 2
@@ -230,20 +229,24 @@ class Snake():
             
             # Slow things down a bit...
             lastScreenUpdate = time.get_ticks() + self.delay
-    
-def main(stdscr):
-    args = vars(parse_cmd_args())
 
-    s = Snake(stdscr, **args)
+
+def main(stdscr, cmd_args):
+    s = Snake(stdscr, cmd_args)
     s.run()
+
 
 def parse_cmd_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--noClip', nargs='?', default=0)
-    parser.add_argument('--delay', nargs='?', default=-1)
+    parser.add_argument('--delay', nargs='?', type=int, default=-1)
+    parser.add_argument('--with-opponent', nargs='?', type=bool, default=False)
+
+    # TODO implement later
+    parser.add_argument('--without-gui', nargs='?', type=bool, default=False)
+    parser.add_argument('--no-clip', nargs='?', type=bool, default=False)
     
     return parser.parse_args(sys.argv[1:])
     
 if __name__ == '__main__':
-    curses.wrapper(main)
+    curses.wrapper(main, parse_cmd_args())
     print "Game Over"
