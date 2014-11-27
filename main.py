@@ -84,6 +84,8 @@ class Snake():
         """Reads the options from the cmd and sets them for the game
 
         """
+        self._width         = cmd_args.width
+        self._height        = cmd_args.height
         self._delay         = cmd_args.delay if cmd_args.delay is not -1 else 500
         self._with_opponent = cmd_args.with_opponent
 
@@ -95,7 +97,7 @@ class Snake():
         """
         # Clear the board
         self.stdscr.erase()
-        
+
         self.stdscr.hline(0, 0, self.TOKEN_WALL, self._width)
         self.stdscr.hline(self._height-1, 0, self.TOKEN_WALL, self._width)
         
@@ -287,12 +289,19 @@ def parse_cmd_args():
     parser.add_argument('--delay', nargs='?', type=int, default=-1)
     parser.add_argument('--with-opponent', nargs='?', type=bool, default=False)
 
+    # Everything above 30 doesen't seem to work, check why
+    parser.add_argument('--width', nargs='?', type=int, default=20)
+    parser.add_argument('--height', nargs='?', type=int, default=20)
+
     # TODO implement later
     parser.add_argument('--without-gui', nargs='?', type=bool, default=False)
     parser.add_argument('--no-clip', nargs='?', type=bool, default=False)
+
+    # TODO add option for network play and of course network play itself
     
     return parser.parse_args(sys.argv[1:])
     
 if __name__ == '__main__':
     curses.wrapper(main, parse_cmd_args())
+
     print "Game Over"
