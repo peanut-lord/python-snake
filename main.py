@@ -1,10 +1,8 @@
 import curses
-from difflib import _calculate_ratio
 import random
 from pygame import time
 import argparse
 import sys
-import thread
 
 class Snake():
     
